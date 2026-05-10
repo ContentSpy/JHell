@@ -1,29 +1,19 @@
-```markdown
 # jhell
-
 A Unix-style command-line shell written in Java.
-
 This is a learning project built to understand how shells work under the hood, specifically focusing on process spawning, file descriptor wiring, pipes, and the REPL (Read-Eval-Print Loop) architecture.
-
 ## Features
-
-- **External Command Execution:** Utilizes `ProcessBuilder` to spawn processes.
-- **Built-in Commands:** Native support for `cd`, `pwd`, and `exit`.
-- **I/O Redirection:** Supports standard output/input redirection (`>`, `>>`, `<`).
-- **Multi-Stage Pipelines:** Chain multiple commands seamlessly (e.g., `cmd1 | cmd2 | cmd3`).
-- **Combined Operations:** Mix redirection and pipes (e.g., `cmd < in.txt | filter | sort > out.txt`).
-- **Stateful Directory Tracking:** Working directory changes persist across commands and external processes.
-
+ * **External Command Execution:** Utilizes ProcessBuilder to spawn processes.
+ * **Built-in Commands:** Native support for cd, pwd, and exit.
+ * **I/O Redirection:** Supports standard output/input redirection (>, >>, <).
+ * **Multi-Stage Pipelines:** Chain multiple commands seamlessly (e.g., cmd1 | cmd2 | cmd3).
+ * **Combined Operations:** Mix redirection and pipes (e.g., cmd < in.txt | filter | sort > out.txt).
+ * **Stateful Directory Tracking:** Working directory changes persist across commands and external processes.
 ## Requirements
-
-- Java 21 or later
-- Maven
-- Linux/macOS (Windows is supported via WSL; native Windows will run, but most standard Unix utilities will not be found)
-
+ * Java 21 or later
+ * Maven
+ * Linux/macOS (Windows is supported via WSL; native Windows will run, but most standard Unix utilities will not be found)
 ## Build
-
 Compile and package the project using Maven:
-
 ```bash
 mvn clean package
 
@@ -35,9 +25,9 @@ Execute the compiled JAR file:
 java -jar target/jhell-*.jar
 
 ```
-You will be greeted with a > prompt. You can now type commands just like you would in bash or fish.
+You will be greeted with a > prompt. You can now type commands just like you would in bash.
 ## Examples
-```
+```bash
 > ls
 Main.java  Shell.java  pom.xml  target
 > cd /tmp
@@ -76,6 +66,3 @@ As a conceptual learning project, jhell lacks some features expected in a daily-
 This project is part of a broader self-study track bridging the gap between high-level application development and low-level systems programming.
 Writing a shell from scratch in Java forced a practical understanding of how fork/exec operate conceptually, why built-in commands are architecturally necessary (an external process cannot modify the parent shell's working directory), and how the Unix philosophy of "everything is a file descriptor" allows pipeline wiring to be remarkably elegant.
 *Next iteration goal: Re-implement this architecture in C using raw fork(), execve(), and pipe() system calls.*
-```
-
-```
