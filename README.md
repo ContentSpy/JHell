@@ -1,43 +1,42 @@
-```bash
+```markdown
 # jhell
 
-A Unix-style shell written in Java.
+A Unix-style command-line shell written in Java.
 
-A learning project — built to understand how shells work under the hood: process spawning, file descriptor wiring, pipes, and the REPL loop.
+This is a learning project built to understand how shells work under the hood, specifically focusing on process spawning, file descriptor wiring, pipes, and the REPL (Read-Eval-Print Loop) architecture.
 
 ## Features
 
-- External command execution via `ProcessBuilder`
-- Built-ins: `cd`, `pwd`, `exit`
-- I/O redirection: `>`, `>>`, `<`
-- Multi-stage pipelines: `cmd1 | cmd2 | cmd3`
-- Combined redirection and pipes: `cmd < in.txt | filter | sort > out.txt`
-- Working directory tracking (so `cd` actually persists across commands)
+- **External Command Execution:** Utilizes `ProcessBuilder` to spawn processes.
+- **Built-in Commands:** Native support for `cd`, `pwd`, and `exit`.
+- **I/O Redirection:** Supports standard output/input redirection (`>`, `>>`, `<`).
+- **Multi-Stage Pipelines:** Chain multiple commands seamlessly (e.g., `cmd1 | cmd2 | cmd3`).
+- **Combined Operations:** Mix redirection and pipes (e.g., `cmd < in.txt | filter | sort > out.txt`).
+- **Stateful Directory Tracking:** Working directory changes persist across commands and external processes.
 
 ## Requirements
 
 - Java 21 or later
-- Maven (for building)
-- Linux/macOS (Windows works via WSL; native Windows runs but most Unix commands won't be found)
+- Maven
+- Linux/macOS (Windows is supported via WSL; native Windows will run, but most standard Unix utilities will not be found)
 
 ## Build
 
+Compile and package the project using Maven:
+
 ```bash
 mvn clean package
+
 ```
-
-This produces a runnable JAR in `target/`.
-
+This will generate a runnable JAR file in the target/ directory.
 ## Run
-
+Execute the compiled JAR file:
 ```bash
-java -jar target/jhell-1.0-SNAPSHOT.jar
+java -jar target/jhell-*.jar
+
 ```
-
-You'll get a `>` prompt. Type commands like you would in bash.
-
+You will be greeted with a > prompt. You can now type commands just like you would in bash or fish.
 ## Examples
-
 ```
 > ls
 Main.java  Shell.java  pom.xml  target
@@ -54,37 +53,29 @@ Shell.java
 > cat shout.txt
 HELLO
 > exit
-```
 
+```
 ## Architecture
-
-The shell is structured around four methods:
-
-- **`start`** — the REPL loop. Reads input, dispatches to built-ins or external execution.
-- **`parse`** — splits input on `|` into pipeline stages, then delegates each stage to `parseSegment` for tokenization and redirection extraction.
-- **`handleBuiltIn`** — handles commands that must modify the shell's own state (`cd`, `exit`) or bypass `ProcessBuilder` for efficiency (`pwd`).
-- **`execute`** — builds a `ProcessBuilder` per pipeline stage, applies input/output redirection to the endpoints, and uses `ProcessBuilder.startPipeline` to wire the stages together.
-
-A `ParsedCommand` record carries each stage's command tokens and redirection info from `parse` to `execute`.
-
+The shell's execution cycle is structured around four primary components:
+ * **start**: The main REPL loop. It continuously reads user input and routes it to either built-in handlers or the external executor.
+ * **parse**: Splits the raw input string by the | delimiter to create pipeline stages, delegating each segment to a tokenizer that extracts commands, arguments, and redirection targets.
+ * **handleBuiltIn**: Manages commands that modify the shell's internal JVM state (like cd and exit) or bypass ProcessBuilder entirely for efficiency (like pwd).
+ * **execute**: Constructs a ProcessBuilder instance for each pipeline stage, wires up the necessary file descriptors for I/O redirection, and links the stages together using ProcessBuilder.startPipeline.
+A ParsedCommand record acts as the data carrier between the parsing and execution phases, holding the command tokens and redirection metadata for each specific stage.
 ## Limitations
-
-This is a learning project, not a daily driver. Things it doesn't do:
-
-- No quoting — `echo "hello world"` tokenizes naively as three tokens
-- No environment variables (`$FOO`, `export`)
-- No background jobs (`cmd &`)
-- No globbing (`*.txt` is passed literally to commands)
-- No signal handling — Ctrl+C may not behave as expected
-- TUI apps (vim, less) launch but have terminal mode quirks
-- Built-ins don't compose with pipes (`pwd | grep /` runs only `pwd`)
-- Error messages don't identify which stage failed in a multi-stage pipeline
-
-## Why I built this
-
-Part of a self-study track in low-level systems programming. Writing a shell forced me to learn how `fork`/`exec` work conceptually, why built-ins exist (try implementing `cd` as an external process — it can't change your shell's directory), and how Unix's "everything is a file descriptor" design enables pipes to be a few lines of code rather than a complex feature.
-
-Next iteration: rewrite in C using raw `fork`, `execve`, and `pipe` syscalls.
+As a conceptual learning project, jhell lacks some features expected in a daily-driver shell:
+ * **Quoting:** No support for string literals (e.g., echo "hello world" is tokenized naively as three separate tokens).
+ * **Environment Variables:** No $VAR expansion or export functionality.
+ * **Job Control:** No background job execution (&).
+ * **Globbing:** Wildcards (*.txt) are passed directly to commands as literal strings.
+ * **Signal Handling:** Interrupts like Ctrl+C may terminate the shell rather than just the running child process.
+ * **TUI Compatibility:** Terminal User Interface applications (like vim or less) will launch but may exhibit terminal mode rendering quirks.
+ * **Built-in Piping:** Built-in commands do not compose within pipes (e.g., pwd | grep / will only execute pwd).
+ * **Error Granularity:** Pipeline error messages do not isolate which specific stage failed.
+## Motivation
+This project is part of a broader self-study track bridging the gap between high-level application development and low-level systems programming.
+Writing a shell from scratch in Java forced a practical understanding of how fork/exec operate conceptually, why built-in commands are architecturally necessary (an external process cannot modify the parent shell's working directory), and how the Unix philosophy of "everything is a file descriptor" allows pipeline wiring to be remarkably elegant.
+*Next iteration goal: Re-implement this architecture in C using raw fork(), execve(), and pipe() system calls.*
 ```
 
-Replace `1.0-SNAPSHOT` with whatever your `target/` folder actually contains (check with `ls target/`). Test the example session before committing — the `tr a-z A-Z` line should work but verify on your machine.
+```
