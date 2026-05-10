@@ -1,4 +1,4 @@
-```markdown
+```bash
 # jhell
 
 A Unix-style shell written in Java.
